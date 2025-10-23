@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model pair {
+  id               Int    @id() @default(autoincrement())
+  baseTokenSymbol  String
+  quoteTokenSymbol String
+  pairName         String
+
+  baseTokenType  Int
+  quoteTokenType Int
+  tokenId        Int?
+  baseToken      String
+  quoteToken     String
+
+  snapshot     snapshot?
+  market_price market_price[]
+
+  @@unique([baseTokenSymbol, quoteTokenSymbol], name: "pairSymbols")
+}
+
+model snapshot {
+  id      Int    @id() @default(autoincrement())
+  content String
+  pair_id Int    @unique
+  pair    pair?  @relation(fields: [pair_id], references: [id])
+}
+
+model order {
+  id        Int    @id() @default(autoincrement())
+  order_id  String
+  creator   String
+  signature String
+  status    String
+}
+
+model market_price {
+  id          Int      @id() @default(autoincrement())
+  pair_id     Int
+  timestamp   DateTime
+  marketprice BigInt
+  pair        pair?    @relation(fields: [pair_id], references: [id])
+}
+
+model trade {
+  id        Int      @id() @default(autoincrement())
+  txHash    String
+  submitted DateTime
+  status    String
+  callArgs  String
+}
